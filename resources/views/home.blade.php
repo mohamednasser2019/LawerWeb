@@ -68,9 +68,9 @@
                                     <i class="fa fa-bar-chart-o fa-2x icon-big"></i>
                                 </div>
                                 <div class="padding-20 core-content">
-                                    <h3 class="title block no-margin">SEO</h3>
+                                    <h3 class="title block no-margin"></h3>
                                     <span
-                                        class="subtitle"> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. </span>
+                                        class="subtitle">Users</span>
                                 </div>
                             </div>
                             <div class="panel-footer clearfix no-padding">

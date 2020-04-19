@@ -23,6 +23,11 @@ class HomeController extends Controller
      */
     public function index()
     {
+//        $homeResult = [];
+//        $users = DB::table('users')->count();
+//        $homeResult = [
+//            "users" => $users
+//        ];
         return view('home');
     }
 }

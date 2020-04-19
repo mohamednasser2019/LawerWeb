@@ -1,6 +1,8 @@
 $(document).ready(function () {
     var caseId;
     var session_id;
+    var note_id;
+    var who_delete;
 
     $('#searchContainer').hide();
     $('#search').on('input', function (e) {
@@ -63,20 +65,27 @@ data-case-id="${index.id}"
             dataType: "json",
             success: function (html) {
                 //for case data
-                $('#to_whome').html(html.result.case.to_whome);
+                $('#to_whome').html(html.result.case.to_whome); //text
+                $('#input_whome').val(html.result.case.to_whome); //input
                 $('#invetation_num').html(html.result.case.invetation_num);
+                $('#input_invetation_num').val(html.result.case.invetation_num);//input
                 $('#inventation_type').html(html.result.case.inventation_type);
+                $('#input_inventation_type').val(html.result.case.inventation_type);//input
                 $('#court').html(html.result.case.court);
+                $('#input_court').val(html.result.case.court);//input
                 $('#circle_num').html(html.result.case.circle_num);
+                $('#input_circle_num').val(html.result.case.circle_num);//input
                 $('#first_session_date').html(html.result.case.first_session_date);
                 //for counting
                 $('#attach_count').html(html.result.attachments_counts);
-                $('#notes_count').html(html.result.sessions_notes_counts);
+                $('#notes_count').html(html.result.sessions_counts);
                 $('#sessions_count').html(html.result.sessions_counts);
                 //for sessions tabel
                 $('#sessions_table tbody').prepend(html.result.sessions);
                 $('#sessions_table').DataTable();
 
+                var array = html.result.case.mokel_name.split(",");
+                console.log(array);
             }
         })
     });
@@ -96,7 +105,7 @@ data-case-id="${index.id}"
             dataType: "json",
             success: function (html) {
                 $('#session_date').val(html.data.session_date);
-                $('#id').val(html.data.id);
+                $('#sessionId').val(html.data.id);
                 $('.modal-title').text("تعديل تاريخ الجلسة");
                 $('#add_session').val("تعديل");
                 $('#add_session_model').modal('show');
@@ -110,7 +119,7 @@ data-case-id="${index.id}"
         var form = $('#sessionForm').serialize() + "&case_Id=" + caseId;
         if ($('#add_session').val() == 'إضافة') {
             $.ajax({
-                url: "{{route('caseDetails.store')}}",
+                url: config.routes.add_session_route,
                 dataType: 'json',
                 data: form,
                 type: 'post',
@@ -130,7 +139,7 @@ data-case-id="${index.id}"
             });
         } else {
             $.ajax({
-                url: "{{ route('caseDetails.update') }}",
+                url: config.routes.update_session_route,
                 dataType: 'json',
                 data: form,
                 type: 'post',
@@ -170,39 +179,156 @@ data-case-id="${index.id}"
     });
     $(document).on('click', '#deleteSession', function () {
         session_id = $(this).data('session-id');
+        who_delete = "session";
         $('#confirmModal').modal('show');
     });
     $('#ok_button').click(function () {
-        $.ajax({
-            url: "caseDetails/destroy/" + session_id,
-            beforeSend: function () {
-                $('#ok_button').text('جارى الحذف ....');
-            },
-            success: function (data) {
-                setTimeout(function () {
-                    $('#confirmModal').modal('hide');
-                    $('#userRow' + session_id).remove();
-                    $('#ok_button').text('حذف');
-                }, 1000);
-            }
-        })
+        if (who_delete == "session") {
+            $.ajax({
+                url: "caseDetails/destroy/" + session_id,
+                beforeSend: function () {
+                    $('#ok_button').text('جارى الحذف ....');
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $('#confirmModal').modal('hide');
+                        $('#userRow' + session_id).remove();
+                        $('#ok_button').text('حذف');
+                    }, 1000);
+                }
+            })
+        } else {
+            $.ajax({
+                url: "notes/destroy/" + note_id,
+                beforeSend: function () {
+                    $('#ok_button').text('جارى الحذف ....');
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $('#confirmModal').modal('hide');
+                        $('#userRow' + note_id).remove();
+                        $('#ok_button').text('حذف');
+                    }, 1000);
+                }
+            })
+        }
     });
     //end sessions
 
     //start for session notes
     //get notes for one session
     $(document).on('click', '#showSessionNotes', function () {
-        var id = $(this).data('session-id');
+        $('#session-notes-table tbody tr').remove();
+        session_id = $(this).data('session-id');
         $.ajax({
-            url: "caseDetails/getSessionNotes/" + id,
+            url: "caseDetails/getSessionNotes/" + session_id,
             dataType: "json",
             success: function (html) {
-                console.log(html);
+                $('#session-notes-table tbody').prepend(html.result);
+                $('#session-notes-table').DataTable();
+
             }
         })
     });
+    //show modal form for adding notes
+    $('#addNotesModal').click(function () {
+        console.log(session_id);
+        if (session_id != null) {
+            $('.modal-title').text("إضافة ملاحظة جديدة");
+            $('#add_note').val("إضافة");
+            $('#add_note_model').modal('show');
+        } else {
+            toastr.error('يجب إختيار الجلسة اولا');
+        }
+    });
+    //add notes
+    $('#add_note').click(function () {
+        var form = $('#notesForm').serialize() + "&session_Id=" + session_id;
+        if ($('#add_note').val() == 'إضافة') {
+            $.ajax({
+                url: config.routes.add_note_route,
+                dataType: 'json',
+                data: form,
+                type: 'post',
 
+                success: function (data) {
+                    // if (data.status == true) {
+                    // $('#sessions-table tbody').append(data.result);
+                    $('#session-notes-table').prepend(data.result);
 
+                    $('#add_note_model').modal('hide');
+                    toastr.success(data.msg);
+                    $("#notesForm").trigger('reset');
+                }, error: function (data_error, exception) {
+                    if (exception == 'error') {
+                        $('#note_error').html(data_error.responseJSON.errors.note);
+                    }
+                }
+            });
+        } else {
+            $.ajax({
+                url: config.routes.update_note_route,
+                dataType: 'json',
+                data: form,
+                type: 'post',
+                success: function (data) {
+                    $("#note" + data.result.id).html(data.result.note);
+                    toastr.success(data.msg);
+                    $('#add_note_model').modal('hide');
+                    $("#notesForm").trigger('reset');
+                }, error: function (data_error, exception) {
+                    if (exception == 'error') {
+                        $('#note_error').html(data_error.responseJSON.errors.note);
+                    }
+                }
+            });
+        }
+    });
+    //show modal for edit note
+    $(document).on('click', '#editNote', function () {
+        var id = $(this).data('notes-id');
+        $.ajax({
+            url: "/notes/" + id + "/edit",
+            dataType: "json",
+            success: function (html) {
+                $('#note').val(html.data.note);
+                $('#noteId').val(html.data.id);
+                $('.modal-title').text("تعديل الملاحظة ");
+                $('#add_note').val("تعديل");
+                $('#add_note_model').modal('show');
+
+            }
+        })
+    });
+    $(document).on('click', '#deleteNote', function () {
+        note_id = $(this).data('notes-id');
+        who_delete = "note";
+        $('#confirmModal').modal('show');
+    });
+    $(document).on('click', '#change-note-status', function () {
+        var id = $(this).data('notes-id');
+        $.ajax({
+            url: "notes/updateStatus/" + id,
+            dataType: "json",
+            success: function (html) {
+                $("#status" + html.result.id).html(html.result.status);
+                // var status = html.status;
+                if (html.status) {
+                    $("#status" + html.result.id).removeClass("label label-danger");
+                    $("#status" + html.result.id).addClass("label label-success");
+                    toastr.success(html.msg);
+                } else {
+                    $("#status" + html.result.id).removeClass("label label-success");
+                    $("#status" + html.result.id).addClass("label label-danger");
+                    toastr.error(html.msg);
+                }
+            }
+        })
+    });
+//print session Notes
+    $(document).on('click', '#printNotes', function () {
+        window.location.href = "notes/exportNotes/" + session_id;
+    });
 });
 $(document).ready(function () {
     $(".modal").on("hidden.bs.modal", function () {

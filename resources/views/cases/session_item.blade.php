@@ -1,7 +1,7 @@
 <tr class="text-dark" id="userRow{{$session->id}}">
     <td class="hidden-xs center">
         <div class="visible-md visible-lg hidden-sm hidden-xs">
-            <a href="#" class="btn btn-light-blue tooltips" data-placement="top" id="editSession"
+            <a  class="btn btn-light-blue tooltips" data-placement="top" id="editSession"
                data-session-id="{{$session->id}}"
                data-original-title="Edit"><i class="fa fa-edit"></i></a>
             <a  class="btn btn-red tooltips" data-placement="top" id="deleteSession"

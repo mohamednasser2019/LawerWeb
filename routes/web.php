@@ -48,3 +48,11 @@ Route::get('caseDetails/showSessionData/{id}', 'CaseDetailsController@showSessio
 Route::get('caseDetails/destroy/{id}', 'CaseDetailsController@destroy');
 Route::get('caseDetails/updateStatus/{id}', 'CaseDetailsController@updateStatus');
 Route::get('caseDetails/getSessionNotes/{id}', 'CaseDetailsController@getSessionNotes');
+
+//notes operations
+Route::resource('notes', 'Session_NotesController');
+Route::post('notes/update', 'Session_NotesController@update')->name('notes.update');
+Route::get('notes/destroy/{id}', 'Session_NotesController@destroy');
+Route::get('notes/updateStatus/{id}', 'Session_NotesController@updateStatus');
+Route::get('notes/exportNotes/{id}', 'Session_NotesController@exportNotes');
+

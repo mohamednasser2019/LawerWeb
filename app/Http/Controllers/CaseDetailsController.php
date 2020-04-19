@@ -116,20 +116,17 @@ class CaseDetailsController extends Controller
             $case = Cases::findOrFail($id);
             $sessions = DB::table('sessions')->where('case_Id', '=', $id)->orderBy('id', 'desc')->get();
             $attachments = DB::table('Attachements')->where('case_Id', '=', $id)->get();
-            $session_notes = [];
             $sessions_table = array();;
             foreach ($sessions as $session) {
-                $session_notes = DB::table('sessions_notes')->where('session_Id', '=', $session->id)->get();
                 $sessions_table [] = view('cases.session_item', compact('session'))->render();
 //                dd($sessions_table);
             }
             $res = [
                 "case" => $case,
                 "sessions" => $sessions_table,
-                "sessions_notes" => $session_notes,
                 "attachments" => $attachments,
                 "sessions_counts" => $sessions->count(),
-                "sessions_notes_counts" => $session_notes->count(),
+                "sessions_notes_counts" => "0",
                 "attachments_counts" => $attachments->count(),
             ];
             return response()->json(['result' => $res]);
@@ -142,7 +139,7 @@ class CaseDetailsController extends Controller
             $data = $this->validate(request(), [
                 'session_date' => 'required'
             ]);
-            $session = Sessions::find($request->id);
+            $session = Sessions::find($request->sessionId);
             $month = date('m', strtotime($request->session_date));
             $year = date('yy', strtotime($request->session_date));
             $session->month = $month;
@@ -169,7 +166,14 @@ class CaseDetailsController extends Controller
     // get sessions notes for one session
     public function getSessionNotes($id)
     {
-        $session_notes = DB::table('sessions_notes')->where('session_Id', '=', $id)->get();
-        return response()->json(['result' => $session_notes]);
+        $session_notes = DB::table('session__notes')->where('session_Id', '=', $id)->orderBy('id', 'desc')->get();
+        $note_table = array();
+
+        foreach ($session_notes as $note) {
+            $note_table [] = view('cases.session_note_item', compact('note'))->render();
+        }
+        return response()->json(['result' => $note_table]);
     }
+
+
 }

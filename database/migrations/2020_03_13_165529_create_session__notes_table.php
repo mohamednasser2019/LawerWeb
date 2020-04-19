@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class SessionsNotes extends Migration
+class CreateSessionNotesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class SessionsNotes extends Migration
      */
     public function up()
     {
-        Schema::create('sessions_notes', function (Blueprint $table) {
+        Schema::create('session__notes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('note');
             $table->bigInteger('session_Id')->unsigned();
@@ -31,6 +31,6 @@ class SessionsNotes extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sessions_notes');
+        Schema::dropIfExists('session__notes');
     }
 }
